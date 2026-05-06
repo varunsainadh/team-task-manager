@@ -5,8 +5,9 @@ const authMiddleware = require("../middleware/authMiddleware");
 const Project = require("../models/Project");
 
 
-// CREATE PROJECT
+// ================= CREATE PROJECT =================
 router.post("/create", authMiddleware, async (req, res) => {
+
   try {
 
     const { name, description } = req.body;
@@ -21,7 +22,7 @@ router.post("/create", authMiddleware, async (req, res) => {
     const project = await Project.create({
       name,
       description,
-      createdBy: req.user._id
+      owner: req.user._id
     });
 
     res.status(201).json({
@@ -38,16 +39,19 @@ router.post("/create", authMiddleware, async (req, res) => {
       success: false,
       message: "Server error"
     });
+
   }
+
 });
 
 
-// GET ALL PROJECTS
+// ================= GET ALL PROJECTS =================
 router.get("/", authMiddleware, async (req, res) => {
+
   try {
 
     const projects = await Project.find({
-      createdBy: req.user._id
+      owner: req.user._id
     });
 
     res.status(200).json({
@@ -63,7 +67,9 @@ router.get("/", authMiddleware, async (req, res) => {
       success: false,
       message: "Server error"
     });
+
   }
+
 });
 
 module.exports = router;
