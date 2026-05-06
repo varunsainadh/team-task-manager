@@ -9,7 +9,7 @@ const Task = require("../models/Task");
 router.post("/create", authMiddleware, async (req, res) => {
   try {
 
-    const { title } = req.body;
+    const { title, projectId, assignedTo,dueDate } = req.body;
 
     if (!title) {
       return res.status(400).json({
@@ -21,7 +21,10 @@ router.post("/create", authMiddleware, async (req, res) => {
     const task = await Task.create({
       title,
       status: "pending",
-      userId: req.user._id
+      userId: req.user._id,
+      projectId,
+      assignedTo,
+      dueDate
     });
 
     res.status(201).json({
