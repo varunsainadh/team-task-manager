@@ -4,10 +4,10 @@ const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
 const Task = require("../models/Task");
 
-// ================= CREATE TASK =================
-router.post("/", authMiddleware, async (req, res) => {
+// CREATE TASK
+router.post("/create", authMiddleware, async (req, res) => {
   try {
-    const { title, description, status } = req.body;
+    const { title } = req.body;
 
     if (!title) {
       return res.status(400).json({
@@ -18,8 +18,6 @@ router.post("/", authMiddleware, async (req, res) => {
 
     const task = await Task.create({
       title,
-      description,
-      status,
       userId: req.user.id
     });
 
@@ -30,7 +28,7 @@ router.post("/", authMiddleware, async (req, res) => {
     });
 
   } catch (error) {
-    console.log("CREATE TASK ERROR:", error);
+    console.log("TASK ERROR:", error);
 
     res.status(500).json({
       success: false,
