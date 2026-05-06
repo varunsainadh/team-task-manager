@@ -4,9 +4,11 @@ const router = express.Router();
 const authMiddleware = require("../middleware/authMiddleware");
 const Task = require("../models/Task");
 
-// CREATE TASK
+
+// ================= CREATE TASK =================
 router.post("/create", authMiddleware, async (req, res) => {
   try {
+
     const { title } = req.body;
 
     if (!title) {
@@ -18,7 +20,7 @@ router.post("/create", authMiddleware, async (req, res) => {
 
     const task = await Task.create({
       title,
-      userId: req.user.id
+      userId: req.user._id
     });
 
     res.status(201).json({
@@ -28,7 +30,8 @@ router.post("/create", authMiddleware, async (req, res) => {
     });
 
   } catch (error) {
-    console.log("TASK ERROR:", error);
+
+    console.log("CREATE TASK ERROR:", error);
 
     res.status(500).json({
       success: false,
@@ -36,5 +39,31 @@ router.post("/create", authMiddleware, async (req, res) => {
     });
   }
 });
+
+
+// ================= GET ALL TASKS =================
+router.get("/", authMiddleware, async (req, res) => {
+  try {
+
+    const tasks = await Task.find({
+      userId: req.user._id
+    });
+
+    res.status(200).json({
+      success: true,
+      tasks
+    });
+
+  } catch (error) {
+
+    console.log("GET TASK ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+});
+
 
 module.exports = router;
