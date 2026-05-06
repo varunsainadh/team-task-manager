@@ -20,6 +20,7 @@ router.post("/create", authMiddleware, async (req, res) => {
 
     const task = await Task.create({
       title,
+      status: "pending",
       userId: req.user._id
     });
 
@@ -57,6 +58,39 @@ router.get("/", authMiddleware, async (req, res) => {
   } catch (error) {
 
     console.log("GET TASK ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+});
+
+
+// ================= UPDATE TASK =================
+router.put("/update/:id", authMiddleware, async (req, res) => {
+  try {
+
+    const { title, status } = req.body;
+
+    const task = await Task.findByIdAndUpdate(
+      req.params.id,
+      {
+        title,
+        status
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Task updated successfully",
+      task
+    });
+
+  } catch (error) {
+
+    console.log("UPDATE TASK ERROR:", error);
 
     res.status(500).json({
       success: false,
