@@ -9,7 +9,12 @@ const Task = require("../models/Task");
 router.post("/create", authMiddleware, async (req, res) => {
   try {
 
-    const { title, projectId, assignedTo,dueDate } = req.body;
+    const {
+      title,
+      projectId,
+      assignedTo,
+      dueDate
+    } = req.body;
 
     if (!title) {
       return res.status(400).json({
@@ -51,7 +56,9 @@ router.get("/", authMiddleware, async (req, res) => {
 
     const tasks = await Task.find({
       userId: req.user._id
-    });
+    })
+    .populate("projectId")
+    .populate("assignedTo", "name email");
 
     res.status(200).json({
       success: true,
@@ -70,6 +77,50 @@ router.get("/", authMiddleware, async (req, res) => {
 });
 
 
+// ================= DASHBOARD STATS =================
+router.get("/dashboard/stats", authMiddleware, async (req, res) => {
+  try {
+
+    const totalTasks = await Task.countDocuments({
+      userId: req.user._id
+    });
+
+    const completedTasks = await Task.countDocuments({
+      userId: req.user._id,
+      status: "completed"
+    });
+
+    const pendingTasks = await Task.countDocuments({
+      userId: req.user._id,
+      status: "pending"
+    });
+
+    const overdueTasks = await Task.countDocuments({
+      userId: req.user._id,
+      dueDate: { $lt: new Date() },
+      status: { $ne: "completed" }
+    });
+
+    res.status(200).json({
+      success: true,
+      totalTasks,
+      completedTasks,
+      pendingTasks,
+      overdueTasks
+    });
+
+  } catch (error) {
+
+    console.log("DASHBOARD ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+});
+
+
 // ================= GET SINGLE TASK =================
 router.get("/:id", authMiddleware, async (req, res) => {
   try {
@@ -77,7 +128,9 @@ router.get("/:id", authMiddleware, async (req, res) => {
     const task = await Task.findOne({
       _id: req.params.id,
       userId: req.user._id
-    });
+    })
+    .populate("projectId")
+    .populate("assignedTo", "name email");
 
     if (!task) {
       return res.status(404).json({
@@ -107,7 +160,13 @@ router.get("/:id", authMiddleware, async (req, res) => {
 router.put("/update/:id", authMiddleware, async (req, res) => {
   try {
 
-    const { title, status } = req.body;
+    const {
+      title,
+      status,
+      projectId,
+      assignedTo,
+      dueDate
+    } = req.body;
 
     const task = await Task.findOneAndUpdate(
       {
@@ -116,9 +175,14 @@ router.put("/update/:id", authMiddleware, async (req, res) => {
       },
       {
         title,
-        status
+        status,
+        projectId,
+        assignedTo,
+        dueDate
       },
-      { new: true }
+      {
+        new: true
+      }
     );
 
     if (!task) {
@@ -177,5 +241,6 @@ router.delete("/delete/:id", authMiddleware, async (req, res) => {
     });
   }
 });
+
 
 module.exports = router;
