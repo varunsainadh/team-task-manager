@@ -67,17 +67,44 @@ router.get("/", authMiddleware, async (req, res) => {
 });
 
 
+// ================= GET SINGLE TASK =================
+router.get("/:id", authMiddleware, async (req, res) => {
+  try {
+
+    const task = await Task.findById(req.params.id);
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        message: "Task not found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      task
+    });
+
+  } catch (error) {
+
+    console.log("GET SINGLE TASK ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+});
+
+
 // ================= UPDATE TASK =================
 router.put("/update/:id", authMiddleware, async (req, res) => {
   try {
 
     const { title, status } = req.body;
 
-    const task = await Task.findOneAndUpdate(
-      {
-        _id: req.params.id,
-        userId: req.user._id
-      },
+    const task = await Task.findByIdAndUpdate(
+      req.params.id,
       {
         title,
         status
@@ -114,66 +141,4 @@ router.put("/update/:id", authMiddleware, async (req, res) => {
 router.delete("/delete/:id", authMiddleware, async (req, res) => {
   try {
 
-    const task = await Task.findOneAndDelete({
-      _id: req.params.id,
-      userId: req.user._id
-    });
-
-    if (!task) {
-      return res.status(404).json({
-        success: false,
-        message: "Task not found"
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Task deleted successfully"
-    });
-
-  } catch (error) {
-
-    console.log("DELETE TASK ERROR:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Server error"
-    });
-  }
-});
-
-
-// ================= GET SINGLE TASK =================
-router.get("/:id", authMiddleware, async (req, res) => {
-  try {
-
-    const task = await Task.findOne({
-      _id: req.params.id,
-      userId: req.user._id
-    });
-
-    if (!task) {
-      return res.status(404).json({
-        success: false,
-        message: "Task not found"
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      task
-    });
-
-  } catch (error) {
-
-    console.log("GET SINGLE TASK ERROR:", error);
-
-    res.status(500).json({
-      success: false,
-      message: "Server error"
-    });
-  }
-});
-
-
-module.exports = router;
+    const task = await Task.find
